@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search Component</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f4f4f4;
+        color: #333;
+      }
+      .container {
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 1rem;
+        background: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .search-area {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+      }
+      .input {
+        flex: 1;
+        padding: 0.8rem;
+        border: 2px solid #ddd;
+        border-radius: 5px 0 0 5px;
+        outline: none;
+        font-size: 1rem;
+      }
+      .search-button {
+        padding: 0.8rem 1rem;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 0 5px 5px 0;
+        cursor: pointer;
+      }
+      .results {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+      }
+      .result-item {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .result-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .result-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+      .result-details {
+        padding: 1rem;
+      }
+      .result-name {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+      .result-description {
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 0.8rem;
+      }
+      .result-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #007bff;
+      }
+      .no-results {
+        text-align: center;
+        color: #777;
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="container">
+      <div class="search-area">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search for clothes..."
+          class="input"
+        />
+        <button id="searchButton" class="search-button">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+      <div id="results" class="results"></div>
+      <p id="noResults" class="no-results" style="display: none">
+        No items found
+      </p>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("searchInput");
+
+        const resultsContainer = document.getElementById("results");
+
+        const noResultsMessage = document.getElementById("noResults");
+
+        searchInput.addEventListener("input", search);
+
+        async function search() {
+          const query = searchInput.value.trim();
+
+          if (query.length > 3) {
+            try {
+              const response = await fetch(
+                `http://localhost:3000/api/search?query=${query}`
+              );
+
+              const results = await response.json();
+
+              renderResults(results);
+            } catch (error) {
+              console.error("Error fetching data:", error);
+            }
+          } else {
+            clearResults();
+          }
+        }
+
+        function renderResults(results) {
+          resultsContainer.innerHTML = "";
+
+          if (results.length > 0) {
+            results.forEach((item) => {
+              const resultElement = document.createElement("div");
+
+              resultElement.classList.add("result-item");
+
+              resultElement.innerHTML = `
+
+       <img src="${item.image_url}" alt="${item.name}" class="result-image">
+
+       <div class="result-details">
+
+        <h3 class="result-name">${item.name}</h3>
+
+        <p class="result-description">${item.description}</p>
+
+        <p class="result-price">$${item.price}</p>
+
+       </div>
+
+      `;
+
+              resultsContainer.appendChild(resultElement);
+            });
+
+            noResultsMessage.style.display = "none";
+          } else {
+            clearResults();
+
+            noResultsMessage.style.display = "block";
+          }
+        }
+
+        function clearResults() {
+          resultsContainer.innerHTML = "";
+
+          noResultsMessage.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
